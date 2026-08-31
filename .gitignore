@@ -1,0 +1,12 @@
+# AI Agent / BMad folders
+.agents/
+_bmad/
+_bmad-output/
+.claude/
+skills-lock.json
+
+# Go compiled binaries
+*.exe
+
+# Go module cache
+vendor/
