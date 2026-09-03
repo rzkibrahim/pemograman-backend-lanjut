@@ -1,4 +1,4 @@
-# Environment file — berisi kredensial, JANGAN di-commit
+ï»¿# Environment file - berisi kredensial, JANGAN di-commit
 .env
 
 # Binary hasil build
@@ -11,3 +11,6 @@
 # Output test
 *.test
 *.out
+
+# Log files
+logs/
