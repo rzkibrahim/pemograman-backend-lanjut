@@ -13,8 +13,10 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 
 	"api-students/app/repository"
+	"api-students/app/service"
 	"api-students/config"
 	"api-students/database"
+	"api-students/helper"
 )
 
 // metodeBerbody mendaftarkan metode HTTP yang seharusnya membawa body.
@@ -30,7 +32,7 @@ func requireJSON(c *fiber.Ctx) error {
 	if metodeBerbody[c.Method()] {
 		ct := c.Get("Content-Type")
 		if !strings.HasPrefix(ct, fiber.MIMEApplicationJSON) {
-			return fail(c, fiber.StatusUnsupportedMediaType,
+			return helper.Fail(c, fiber.StatusUnsupportedMediaType,
 				"Content-Type harus application/json")
 		}
 	}
@@ -48,9 +50,9 @@ func main() {
 	}
 	defer pool.Close()
 
-	// 3. Perakitan: pool -> repository -> handler
+	// 3. Perakitan: pool -> repository -> service
 	studentRepository := repository.NewStudentRepository(pool)
-	studentHandler := NewStudentHandler(studentRepository)
+	studentService := service.NewStudentService(studentRepository)
 
 	// 4. Aplikasi
 	app := fiber.New(fiber.Config{
@@ -62,7 +64,7 @@ func main() {
 				status = e.Code
 				pesan = e.Message
 			}
-			return fail(c, status, pesan)
+			return helper.Fail(c, status, pesan)
 		},
 	})
 
@@ -82,23 +84,23 @@ func main() {
 		defer cancel()
 
 		if err := pool.Ping(ctx); err != nil {
-			return fail(c, fiber.StatusServiceUnavailable, "database tidak dapat dihubungi")
+			return helper.Fail(c, fiber.StatusServiceUnavailable, "database tidak dapat dihubungi")
 		}
-		return ok(c, "server dan database berjalan", fiber.Map{"timestamp": time.Now()})
+		return helper.Success(c, fiber.StatusOK, "server dan database berjalan", fiber.Map{"timestamp": time.Now()})
 	})
 
 	// Grup students
 	s := api.Group("/students", requireJSON)
-	s.Get("/", studentHandler.List)
-	s.Get("/:id", studentHandler.Get)
-	s.Post("/", studentHandler.Create)
-	s.Put("/:id", studentHandler.Replace)
-	s.Patch("/:id", studentHandler.Patch)
-	s.Delete("/:id", studentHandler.Delete)
+	s.Get("/", studentService.List)
+	s.Get("/:id", studentService.Get)
+	s.Post("/", studentService.Create)
+	s.Put("/:id", studentService.Replace)
+	s.Patch("/:id", studentService.Patch)
+	s.Delete("/:id", studentService.Delete)
 
 	// Catch-all
 	app.Use(func(c *fiber.Ctx) error {
-		return fail(c, fiber.StatusNotFound, "endpoint tidak ditemukan")
+		return helper.Fail(c, fiber.StatusNotFound, "endpoint tidak ditemukan")
 	})
 
 	port := config.GetEnv("APP_PORT", "3000")
