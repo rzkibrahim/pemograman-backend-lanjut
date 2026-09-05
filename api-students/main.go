@@ -2,108 +2,70 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
-	"strings"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/requestid"
 
 	"api-students/app/repository"
 	"api-students/app/service"
 	"api-students/config"
 	"api-students/database"
-	"api-students/helper"
 )
 
-// metodeBerbody mendaftarkan metode HTTP yang seharusnya membawa body.
-var metodeBerbody = map[string]bool{
-	fiber.MethodPost:  true,
-	fiber.MethodPut:   true,
-	fiber.MethodPatch: true,
-}
-
-// requireJSON adalah middleware yang menolak request berisi body yang
-// Content-Type-nya bukan application/json.
-func requireJSON(c *fiber.Ctx) error {
-	if metodeBerbody[c.Method()] {
-		ct := c.Get("Content-Type")
-		if !strings.HasPrefix(ct, fiber.MIMEApplicationJSON) {
-			return helper.Fail(c, fiber.StatusUnsupportedMediaType,
-				"Content-Type harus application/json")
-		}
-	}
-	return c.Next()
-}
-
 func main() {
-	// 1. Konfigurasi
+	// 1. Konfigurasi environment
 	config.LoadEnv()
 
-	// 2. Koneksi basis data
+	// 2. Structured Logger dengan rotasi file otomatis (lumberjack)
+	appLogger := config.NewLogger()
+
+	// 3. Basis data: connection pool PostgreSQL
 	pool, err := database.NewPool(context.Background())
 	if err != nil {
-		log.Fatalf("database: %v", err)
+		appLogger.Error("koneksi database gagal", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 	defer pool.Close()
 
-	// 3. Perakitan: pool -> repository -> service
-	studentRepository := repository.NewStudentRepository(pool)
-	studentService := service.NewStudentService(studentRepository)
+	// 4. Lapisan Repository
+	studentRepo := repository.NewStudentRepository(pool)
 
-	// 4. Aplikasi
-	app := fiber.New(fiber.Config{
-		AppName: "API Students - Praktikum Backend Lanjut Pertemuan 3",
-		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			status := fiber.StatusInternalServerError
-			pesan := "terjadi kesalahan pada server"
-			if e, ok := err.(*fiber.Error); ok {
-				status = e.Code
-				pesan = e.Message
-			}
-			return helper.Fail(c, status, pesan)
-		},
-	})
+	// 5. Lapisan Service
+	studentService := service.NewStudentService(studentRepo)
 
-	// === Middleware Global ===
-	app.Use(requestid.New())
-	app.Use(logger.New(logger.Config{
-		Format: "[${time}] ${locals:requestid} ${method} ${path} ${status} ${latency}\n",
-	}))
-	app.Use(cors.New())
-
-	// Grup API dengan versioning
-	api := app.Group("/api/v1")
-
-	// Health check -- kini ikut memeriksa basis data
-	api.Get("/health", func(c *fiber.Ctx) error {
-		ctx, cancel := context.WithTimeout(c.UserContext(), 2*time.Second)
-		defer cancel()
-
-		if err := pool.Ping(ctx); err != nil {
-			return helper.Fail(c, fiber.StatusServiceUnavailable, "database tidak dapat dihubungi")
-		}
-		return helper.Success(c, fiber.StatusOK, "server dan database berjalan", fiber.Map{"timestamp": time.Now()})
-	})
-
-	// Grup students
-	s := api.Group("/students", requireJSON)
-	s.Get("/", studentService.List)
-	s.Get("/:id", studentService.Get)
-	s.Post("/", studentService.Create)
-	s.Put("/:id", studentService.Replace)
-	s.Patch("/:id", studentService.Patch)
-	s.Delete("/:id", studentService.Delete)
-
-	// Catch-all
-	app.Use(func(c *fiber.Ctx) error {
-		return helper.Fail(c, fiber.StatusNotFound, "endpoint tidak ditemukan")
-	})
+	// 6. Perakitan Aplikasi Fiber (middleware, route, handler error terpusat)
+	app := config.NewApp(appLogger, pool, studentService)
 
 	port := config.GetEnv("APP_PORT", "3000")
-	fmt.Printf("Server berjalan di http://localhost:%s\n", port)
-	log.Fatal(app.Listen(":" + port))
+
+	// 7. Menjalankan server pada goroutine terpisah
+	go func() {
+		appLogger.Info("server dimulai",
+			slog.String("port", port),
+			slog.String("url", fmt.Sprintf("http://localhost:%s", port)),
+		)
+
+		if err := app.Listen(":" + port); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			appLogger.Error("server berhenti dengan kesalahan", slog.String("error", err.Error()))
+		}
+	}()
+
+	// 8. Menunggu sinyal sistem untuk graceful shutdown (SIGINT / Ctrl+C, SIGTERM)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	appLogger.Info("sinyal penghentian diterima, memulai graceful shutdown...")
+
+	// Memberi tenggat waktu 5 detik untuk menyelesaikan request yang sedang berjalan
+	if err := app.ShutdownWithTimeout(5 * time.Second); err != nil {
+		appLogger.Error("gagal mematikan server secara graceful", slog.String("error", err.Error()))
+	} else {
+		appLogger.Info("server berhasil dimatikan dengan aman")
+	}
 }
