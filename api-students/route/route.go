@@ -1,3 +1,7 @@
+// Package route mendaftarkan seluruh endpoint REST API ke aplikasi Fiber.
+// Package ini bertanggung jawab menghubungkan URL path dengan handler
+// yang sesuai di lapisan service, serta menyediakan endpoint utilitas
+// seperti health check untuk memeriksa kesiapan sistem.
 package route
 
 import (

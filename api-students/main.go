@@ -1,3 +1,13 @@
+// Package main adalah titik masuk (entry point) aplikasi API Students.
+//
+// Setelah refactoring Clean Architecture, main.go hanya bertugas sebagai
+// orchestrator perakitan dependensi (dependency assembly) dengan urutan:
+//
+//	config.LoadEnv → config.NewLogger → database.NewPool →
+//	repository.NewStudentRepository → service.NewStudentService →
+//	config.NewApp → app.Listen + graceful shutdown
+//
+// Tidak ada business logic, routing, atau middleware di file ini.
 package main
 
 import (

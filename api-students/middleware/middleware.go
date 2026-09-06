@@ -1,3 +1,14 @@
+// Package middleware berisi seluruh middleware global yang dipasang ke aplikasi Fiber.
+//
+// Urutan pemasangan middleware penting karena dieksekusi secara berantai (chain):
+//  1. requestid — menyisipkan UUID unik ke setiap request untuk tracing.
+//  2. recover   — menangkap panic agar server tidak crash.
+//  3. helmet    — menambahkan header keamanan HTTP (XSS, clickjacking, dsb).
+//  4. cors      — mengizinkan request lintas origin (Cross-Origin Resource Sharing).
+//  5. RequestLogger — mencatat log terstruktur setiap HTTP request via slog.
+//
+// Middleware RequireJSON dipakai secara selektif pada grup route yang membutuhkan
+// validasi Content-Type (POST, PUT, PATCH).
 package middleware
 
 import (

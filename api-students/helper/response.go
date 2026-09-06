@@ -1,3 +1,10 @@
+// Package helper menyediakan fungsi-fungsi pembantu yang berinteraksi langsung
+// dengan objek *fiber.Ctx milik framework Fiber. Package ini berperan sebagai
+// "adapter" antara lapisan HTTP (Fiber) dan lapisan bisnis (service/rules).
+//
+// Terdiri dari dua file:
+//   - response.go : fungsi-fungsi untuk membentuk respons JSON yang konsisten.
+//   - request.go  : fungsi-fungsi untuk membaca dan memvalidasi input HTTP.
 package helper
 
 import (

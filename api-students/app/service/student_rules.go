@@ -1,3 +1,6 @@
+// Package service mengelola aturan bisnis dan orkestrasi alur data aplikasi.
+// File student_rules.go secara khusus berisi Business Rules murni (Pure Domain Logic)
+// yang sepenuhnya independen dari framework HTTP (Fiber) maupun basis data (PostgreSQL).
 package service
 
 import (
