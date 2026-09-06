@@ -1,3 +1,6 @@
+// Package database mengelola koneksi dan pool basis data PostgreSQL menggunakan pgxpool.
+// Package ini mengisolasi konfigurasi koneksi (DSN, pooling limits, timeouts)
+// dari lapisan bisnis dan presentasi.
 package database
 
 import (

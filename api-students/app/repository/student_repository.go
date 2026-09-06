@@ -1,3 +1,7 @@
+// Package repository berisi implementasi akses data (persistence layer).
+// Package ini hanya bergantung pada package model (lapisan bawah) dan
+// pustaka database (pgx/pgxpool). Ia TIDAK BOLEH mengimpor package fiber,
+// helper, middleware, ataupun service untuk menjaga pemisahan lapisan.
 package repository
 
 import (
@@ -13,9 +17,11 @@ import (
 )
 
 // Sentinel error: error milik lapisan repository, bukan error milik pgx.
+// Penggunaan sentinel error memudahkan lapisan service untuk memetakan
+// error bisnis menjadi respons HTTP yang tepat tanpa mengenal detail database.
 var (
-	ErrNotFound  = errors.New("data tidak ditemukan")
-	ErrDuplicate = errors.New("data sudah ada")
+	ErrNotFound  = errors.New("data tidak ditemukan")  // dikembalikan saat ID/query tidak menemukan baris
+	ErrDuplicate = errors.New("data sudah ada")        // dikembalikan saat terjadi pelanggaran UNIQUE constraint
 )
 
 // StudentRepository adalah KONTRAK penyimpanan data student.
@@ -37,11 +43,15 @@ var kolomUrut = map[string]string{
 	"created_at": "created_at",
 }
 
+// studentPostgresRepository adalah implementasi konkret dari StudentRepository
+// yang menggunakan PostgreSQL sebagai penyimpanan data melalui connection pool pgxpool.
 type studentPostgresRepository struct {
-	pool *pgxpool.Pool
+	pool *pgxpool.Pool // connection pool untuk koneksi ke PostgreSQL
 }
 
-// NewStudentRepository mengembalikan interface, bukan struct konkret.
+// NewStudentRepository mengembalikan interface StudentRepository, bukan struct konkret.
+// Hal ini memungkinkan lapisan service untuk di-test tanpa database nyata
+// (cukup dengan membuat mock yang mengimplementasikan interface yang sama).
 func NewStudentRepository(pool *pgxpool.Pool) StudentRepository {
 	return &studentPostgresRepository{pool: pool}
 }

@@ -1,3 +1,7 @@
+// Package config berisi fungsi-fungsi konfigurasi aplikasi, termasuk:
+//   - env.go    : pembacaan variabel environment (.env) melalui godotenv.
+//   - logger.go : inisialisasi structured logger (slog) dengan rotasi file.
+//   - app.go    : perakitan aplikasi Fiber beserta middleware dan route.
 package config
 
 import (
