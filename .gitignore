@@ -10,3 +10,6 @@ skills-lock.json
 
 # Go module cache
 vendor/
+
+challenge_backend/
+latihan-endpoint/
