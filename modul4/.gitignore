@@ -1,0 +1,17 @@
+﻿# Environment file - berisi kredensial, JANGAN di-commit
+.env
+
+# Binary hasil build
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Output test
+*.test
+*.out
+
+# Log files
+logs/
+

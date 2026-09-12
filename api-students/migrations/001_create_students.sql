@@ -26,3 +26,10 @@ CREATE INDEX IF NOT EXISTS students_name_lower_idx
 -- (grade_min dan grade_max).
 CREATE INDEX IF NOT EXISTS students_grade_idx
     ON students (grade);
+
+create table if not exists nilai(
+    id_nilai serial primary key,
+    id_student serial not null,
+    mata_kuliah varchar(100) not null,
+    nilai numeric(5,2) not null default 0
+);
