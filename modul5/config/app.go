@@ -23,7 +23,8 @@ func NewApp(
 	jwtSecret string,
 ) *fiber.App {
 	app := fiber.New(fiber.Config{
-		AppName: "API Students - Praktikum Backend Lanjut (Pertemuan 5)",
+		AppName:   "API Students - Praktikum Backend Lanjut (Pertemuan 5)",
+		BodyLimit: 1 * 1024 * 1024, // Batasi ukuran body maksimal 1MB (mencegah DoS memory exhaustion)
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			status := fiber.StatusInternalServerError
 			pesan := "terjadi kesalahan pada server"
