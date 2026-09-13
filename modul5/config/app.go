@@ -14,14 +14,16 @@ import (
 
 // NewApp merakit seluruh komponen aplikasi web Fiber:
 // inisialisasi Fiber dengan error handler terpusat, registrasi middleware global,
-// pendaftaran endpoint route, dan penanganan catch-all 404 (not found).
+// pendaftaran endpoint route (auth & protected students), dan penanganan catch-all 404.
 func NewApp(
 	logger *slog.Logger,
 	pool *pgxpool.Pool,
 	studentService *service.StudentService,
+	authService service.AuthService,
+	jwtSecret string,
 ) *fiber.App {
 	app := fiber.New(fiber.Config{
-		AppName: "API Students - Praktikum Backend Lanjut",
+		AppName: "API Students - Praktikum Backend Lanjut (Pertemuan 5)",
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			status := fiber.StatusInternalServerError
 			pesan := "terjadi kesalahan pada server"
@@ -46,7 +48,7 @@ func NewApp(
 	middleware.Register(app, logger, allowedOrigins)
 
 	// 2. Daftarkan seluruh rute API
-	route.Register(app, pool, studentService)
+	route.Register(app, pool, studentService, authService, jwtSecret)
 
 	// 3. Tangani endpoint yang tidak ditemukan
 	app.Use(func(c *fiber.Ctx) error {
@@ -55,5 +57,3 @@ func NewApp(
 
 	return app
 }
-
-
