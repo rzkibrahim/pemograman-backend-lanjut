@@ -161,15 +161,91 @@ func (s *authService) Login(ctx context.Context, req model.LoginRequest) (model.
 	}, nil, nil
 }
 
-// RefreshToken, Logout, dan Me akan diimplementasikan penuh pada commit berikutnya.
 func (s *authService) RefreshToken(ctx context.Context, req model.RefreshTokenRequest) (model.AuthResponse, error) {
-	return model.AuthResponse{}, errors.New("not implemented")
+	if req.RefreshToken == "" {
+		return model.AuthResponse{}, errors.New("refresh token wajib disertakan")
+	}
+
+	// 1. Hash refresh token yang diterima untuk dicocokkan ke database
+	tokenHash := helper.SHA256Hex(req.RefreshToken)
+
+	// 2. Cari token di database
+	tokenEntity, err := s.tokenRepo.FindByTokenHash(ctx, tokenHash)
+	if err != nil {
+		return model.AuthResponse{}, errors.New("refresh token tidak valid")
+	}
+
+	// 3. Periksa apakah sudah pernah dicabut (revoked)
+	if tokenEntity.RevokedAt != nil {
+		return model.AuthResponse{}, ErrTokenRevoked
+	}
+
+	// 4. Periksa apakah sudah kedaluwarsa
+	if time.Now().After(tokenEntity.ExpiresAt) {
+		return model.AuthResponse{}, ErrRefreshTokenExpired
+	}
+
+	// 5. Ambil data user terkait
+	user, err := s.userRepo.FindByID(ctx, tokenEntity.UserID)
+	if err != nil {
+		return model.AuthResponse{}, errors.New("user pemilik token tidak ditemukan")
+	}
+
+	// 6. ROTASI REFRESH TOKEN (One-time Use Policy):
+	// Cabut token lama seketika agar tidak bisa digunakan ulang
+	if err := s.tokenRepo.Revoke(ctx, tokenHash); err != nil {
+		return model.AuthResponse{}, fmt.Errorf("gagal mencabut token lama: %w", err)
+	}
+
+	// 7. Terbitkan pasangan token baru
+	newAccessToken, err := helper.GenerateAccessToken(user.ID, user.Username, user.Role, s.jwtIssuer, s.jwtSecret, s.accessTTL)
+	if err != nil {
+		return model.AuthResponse{}, fmt.Errorf("membuat access token baru: %w", err)
+	}
+
+	newRawRefreshToken, err := helper.RandomToken(32)
+	if err != nil {
+		return model.AuthResponse{}, fmt.Errorf("membuat refresh token baru: %w", err)
+	}
+
+	newTokenHash := helper.SHA256Hex(newRawRefreshToken)
+	newRefreshTokenEntity := model.RefreshToken{
+		UserID:    user.ID,
+		TokenHash: newTokenHash,
+		ExpiresAt: time.Now().Add(s.refreshTTL),
+	}
+	if _, err := s.tokenRepo.Create(ctx, newRefreshTokenEntity); err != nil {
+		return model.AuthResponse{}, fmt.Errorf("menyimpan refresh token baru: %w", err)
+	}
+
+	return model.AuthResponse{
+		AccessToken:  newAccessToken,
+		RefreshToken: newRawRefreshToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    int64(s.accessTTL.Seconds()),
+	}, nil
 }
 
 func (s *authService) Logout(ctx context.Context, refreshToken string) error {
-	return errors.New("not implemented")
+	if refreshToken == "" {
+		return nil
+	}
+	tokenHash := helper.SHA256Hex(refreshToken)
+	_ = s.tokenRepo.Revoke(ctx, tokenHash)
+	return nil
 }
 
 func (s *authService) Me(ctx context.Context, userID int) (model.UserResponse, error) {
-	return model.UserResponse{}, errors.New("not implemented")
+	user, err := s.userRepo.FindByID(ctx, userID)
+	if err != nil {
+		return model.UserResponse{}, errors.New("user tidak ditemukan")
+	}
+
+	return model.UserResponse{
+		ID:        user.ID,
+		Username:  user.Username,
+		Email:     user.Email,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+	}, nil
 }
