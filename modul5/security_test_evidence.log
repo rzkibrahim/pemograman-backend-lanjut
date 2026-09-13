@@ -1,0 +1,311 @@
+﻿
+===============================================================
+HASIL PENGUJIAN KEAMANAN & AUTENTIKASI (MODUL 5)
+Waktu Pengujian: 2026-09-12 15:24:16
+===============================================================
+
+--- [TEST 0] GET /health (Publik) ---
+HTTP/1.1 200 OK
+Date: Sat, 12 Sep 2026 08:24:17 GMT
+Content-Type: application/json
+Content-Length: 114
+X-Request-Id: 62af5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+
+{"success":true,"message":"server dan database berjalan","data":{"timestamp":"2026-09-12T15:24:17.0235527+07:00"}}
+
+--- [TEST 1] POST /auth/register (Normal -> 201 Created, Tanpa Password) ---
+HTTP/1.1 422 Unprocessable Entity
+Date: Sat, 12 Sep 2026 08:24:17 GMT
+Content-Type: application/json
+Content-Length: 82
+X-Request-Id: 63af5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+
+{"success":false,"message":"validasi gagal","errors":{"username":"sudah dipakai"}}
+
+--- [TEST 2] POST /auth/register (Password Lemah / Umum -> 422 Unprocessable Entity) ---
+HTTP/1.1 422 Unprocessable Entity
+Date: Sat, 12 Sep 2026 08:24:17 GMT
+Content-Type: application/json
+Content-Length: 90
+X-Request-Id: 64af5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+
+{"success":false,"message":"validasi gagal","errors":{"password":"password terlalu umum"}}
+
+--- [TEST 3] Cek DB: Format Hash Password bcrypt & Role Default ---
+DB Query Output:  sari_rahma_test | $2a$12$ | user 
+
+--- [TEST 4] Mass Assignment: Request Register Mengirim role='admin' ---
+HTTP/1.1 422 Unprocessable Entity
+Date: Sat, 12 Sep 2026 08:24:17 GMT
+Content-Type: application/json
+Content-Length: 82
+X-Request-Id: 65af5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+
+{"success":false,"message":"validasi gagal","errors":{"username":"sudah dipakai"}}
+DB Role Hasil:  hacker_role_test | user  (Role tetap 'user', bukan 'admin')
+
+--- [TEST 5] Akses /students Tanpa Token -> 401 Unauthorized + WWW-Authenticate ---
+HTTP/1.1 401 Unauthorized
+Date: Sat, 12 Sep 2026 08:24:18 GMT
+Content-Type: application/json
+Content-Length: 58
+X-Request-Id: 66af5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+Www-Authenticate: Bearer
+
+{"success":false,"message":"token autentikasi diperlukan"}
+
+--- [TEST 6] User Enumeration: Perbandingan Login User Tidak Ada vs Password Salah ---
+Login User Tak Ada:
+HTTP/1.1 401 Unauthorized
+Date: Sat, 12 Sep 2026 08:24:18 GMT
+Content-Type: application/json
+Content-Length: 58
+X-Request-Id: 67af5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+X-Ratelimit-Limit: 5
+X-Ratelimit-Remaining: 4
+X-Ratelimit-Reset: 60
+
+{"success":false,"message":"username atau password salah"}
+Login Password Salah:
+HTTP/1.1 401 Unauthorized
+Date: Sat, 12 Sep 2026 08:24:19 GMT
+Content-Type: application/json
+Content-Length: 58
+X-Request-Id: 68af5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+X-Ratelimit-Limit: 5
+X-Ratelimit-Remaining: 3
+X-Ratelimit-Reset: 59
+
+{"success":false,"message":"username atau password salah"}
+Kesimpulan: Kedua respon status (401) dan pesan ('username atau password salah') identik.
+
+--- [TEST 7] POST /auth/login (Kredensial Benar -> 200 OK) ---
+Response body: {"success":true,"message":"login berhasil","data":{"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjozLCJ1c2VybmFtZSI6InNhcmlfcmFobWFfdGVzdCIsInJvbGUiOiJ1c2VyIiwiaXNzIjoicHJha3Rpa3VtLWJhY2tlbmQiLCJzdWIiOiIzIiwiZXhwIjoxNzg5MjAyMzU5LCJpYXQiOjE3ODkyMDE0NTl9.2YgUrQwRHfxOFcHIp0tcs8mqGV-0PgZN8U-l6tXb3do","refresh_token":"c04bf44a0593f5c92e6ae04e90e27be2ede8ac44cfcb1d4e8e13092444346b40","token_type":"Bearer","expires_in":900}}
+Access Token: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
+Refresh Token: c04bf44a0593f5c92e6ae04e90e27b...
+Expires In: 900 detik
+
+--- [TEST 8] GET /students dengan Access Token Valid -> 200 OK ---
+HTTP/1.1 200 OK
+Date: Sat, 12 Sep 2026 08:24:20 GMT
+Content-Type: application/json
+Content-Length: 252
+X-Request-Id: 6aaf5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+
+{"success":true,"message":"daftar student berhasil diambil","data":[{"id":1,"nim":"230101001","name":"Budi Santoso","grade":98.5,"is_active":false,"created_at":"2026-09-06T20:20:43.088296+07:00"}],"meta":{"page":1,"limit":10,"total":1,"total_pages":1}}
+
+--- [TEST 9] GET /students dengan Token Dimodifikasi 1 Karakter -> 401 Unauthorized ---
+HTTP/1.1 401 Unauthorized
+Date: Sat, 12 Sep 2026 08:24:20 GMT
+Content-Type: application/json
+Content-Length: 54
+X-Request-Id: 6baf5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+Www-Authenticate: Bearer error="invalid_token", error_description="access token tidak valid"
+
+{"success":false,"message":"access token tidak valid"}
+
+--- [TEST 10] GET /students dengan Token alg='none' -> 401 Unauthorized ---
+HTTP/1.1 401 Unauthorized
+Date: Sat, 12 Sep 2026 08:24:20 GMT
+Content-Type: application/json
+Content-Length: 54
+X-Request-Id: 6caf5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+Www-Authenticate: Bearer error="invalid_token", error_description="access token tidak valid"
+
+{"success":false,"message":"access token tidak valid"}
+
+--- [TEST 11] Refresh Token Rotation: Gunakan Sekali -> Sukses 200, Gunakan Lagi -> 401 ---
+Pemakaian Pertama:
+HTTP/1.1 200 OK
+Date: Sat, 12 Sep 2026 08:24:20 GMT
+Content-Type: application/json
+Content-Length: 452
+X-Request-Id: 6daf5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+
+{"success":true,"message":"token berhasil diperbarui","data":{"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjozLCJ1c2VybmFtZSI6InNhcmlfcmFobWFfdGVzdCIsInJvbGUiOiJ1c2VyIiwiaXNzIjoicHJha3Rpa3VtLWJhY2tlbmQiLCJzdWIiOiIzIiwiZXhwIjoxNzg5MjAyMzYwLCJpYXQiOjE3ODkyMDE0NjB9.4u98fFBACdH9gd0Fe7NdQMRKOpWuxOlZmzxmeQ-YDHc","refresh_token":"ebdab4d170467731a932d73f9e0f3c25c19bf6c403a7bb7689cf7f2c1acc25f5","token_type":"Bearer","expires_in":900}}
+Pemakaian Kedua (Token Lama Bekas):
+HTTP/1.1 401 Unauthorized
+Date: Sat, 12 Sep 2026 08:24:21 GMT
+Content-Type: application/json
+Content-Length: 57
+X-Request-Id: 6eaf5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+
+{"success":false,"message":"refresh token telah dicabut"}
+
+--- [TEST 12] GET /auth/me dengan Access Token Baru -> 200 OK ---
+HTTP/1.1 200 OK
+Date: Sat, 12 Sep 2026 08:24:21 GMT
+Content-Type: application/json
+Content-Length: 198
+X-Request-Id: 6faf5280-6310-4e87-840b-74e8883bfc92
+X-Xss-Protection: 0
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+Vary: Origin
+
+{"success":true,"message":"data pengguna berhasil diambil","data":{"id":3,"username":"sari_rahma_test","email":"sari_test@example.com","role":"user","created_at":"2026-09-12T15:23:54.038617+07:00"}}
+
+--- [TEST 13] Brute Force Rate Limiter: Percobaan Cepat Berturut-turut ---
+Percobaan 1: HTTP/1.1 401 Unauthorized |  | {"success":false,"message":"username atau password salah"}
+Percobaan 2: HTTP/1.1 401 Unauthorized |  | {"success":false,"message":"username atau password salah"}
+Percobaan 3: HTTP/1.1 429 Too Many Requests | Retry-After: 60 | {"success":false,"message":"terlalu banyak percobaan login, silakan coba lagi setelah 60 detik"}
+Percobaan 4: HTTP/1.1 429 Too Many Requests | Retry-After: 60 | {"success":false,"message":"terlalu banyak percobaan login, silakan coba lagi setelah 60 detik"}
+Percobaan 5: HTTP/1.1 429 Too Many Requests | Retry-After: 60 | {"success":false,"message":"terlalu banyak percobaan login, silakan coba lagi setelah 60 detik"}
+Percobaan 6: HTTP/1.1 429 Too Many Requests | Retry-After: 60 | {"success":false,"message":"terlalu banyak percobaan login, silakan coba lagi setelah 60 detik"}
+Percobaan 7: HTTP/1.1 429 Too Many Requests | Retry-After: 60 | {"success":false,"message":"terlalu banyak percobaan login, silakan coba lagi setelah 60 detik"}
+
+===============================================================
+SELURUH PENGUJIAN KEAMANAN SELESAI DENGAN SUKSES!
+===============================================================
