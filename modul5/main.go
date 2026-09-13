@@ -46,8 +46,13 @@ func main() {
 	userRepo := repository.NewUserRepository(pool)
 	tokenRepo := repository.NewTokenRepository(pool)
 
-	// 5. Konfigurasi Autentikasi JWT
-	jwtSecret := config.GetEnv("JWT_SECRET", "super-secret-key-that-is-at-least-32-bytes-long!")
+	// 5. Konfigurasi Autentikasi JWT (Validasi ketat: wajib min 32 karakter acak)
+	jwtSecret := config.GetEnv("JWT_SECRET", "")
+	if len(jwtSecret) < 32 {
+		appLogger.Error("konfigurasi keamanan gagal: JWT_SECRET wajib diisi di .env dengan panjang minimal 32 karakter acak")
+		os.Exit(1)
+	}
+
 	jwtIssuer := config.GetEnv("JWT_ISSUER", "praktikum-backend")
 	accessTTL := time.Duration(config.GetEnvInt("ACCESS_TOKEN_TTL_MINUTES", 15)) * time.Minute
 	refreshTTL := time.Duration(config.GetEnvInt("REFRESH_TOKEN_TTL_DAYS", 7)) * 24 * time.Hour
