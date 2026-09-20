@@ -1,0 +1,56 @@
+﻿=== BUKTI EKSEKUSI PENGUJIAN MATRIKS RBAC & SECURITY MODUL 6 ===
+Tanggal Eksekusi: 2026-09-18 22:51:47
+================================================================
+
+[PASS] M1.1 | Role: admin | GET /students | Expected: 200 | Actual: 200 | Admin akses daftar seluruh mahasiswa
+   Response Detail: {"success":true,"message":"daftar student berhasil diambil","data":[{"id":1,"nim":"230101001","name":"Budi Santoso","grade":98.5,"is_active":false,"owner_id":1,"created_at":"2026-09-06T20:20:43.088296+07:00"},{"id":2,"nim":"NIM31474","name":"Mahasiswa Milik Andi","grade":95,"is_active":true,"owner_id":9,"created_at":"2026-09-18T22:49:58.010169+07:00"}],"meta":{"page":1,"limit":10,"total":2,"total_pages":1}}
+[PASS] M1.2 | Role: staff | GET /students | Expected: 200 | Actual: 200 | Staff akses daftar seluruh mahasiswa
+   Response Detail: {"success":true,"message":"daftar student berhasil diambil","data":[{"id":1,"nim":"230101001","name":"Budi Santoso","grade":98.5,"is_active":false,"owner_id":1,"created_at":"2026-09-06T20:20:43.088296+07:00"},{"id":2,"nim":"NIM31474","name":"Mahasiswa Milik Andi","grade":95,"is_active":true,"owner_id":9,"created_at":"2026-09-18T22:49:58.010169+07:00"}],"meta":{"page":1,"limit":10,"total":2,"total_pages":1}}
+[PASS] M1.3 | Role: user | GET /students | Expected: 403 | Actual: 403 | User ditolak melihat daftar seluruh mahasiswa
+   Response Detail: {"success":false,"message":"akses ditolak: Anda tidak memiliki hak akses (student:list)"}
+[PASS] M1.4 | Role: anonymous | GET /students | Expected: 401 | Actual: 401 | Tanpa token ditolak autentikasi
+   Response Detail: {"success":false,"message":"token autentikasi diperlukan"}
+[PASS] M2.1 | Role: admin | POST /students | Expected: 201 | Actual: 201 | Admin berhasil menambah mahasiswa
+   Response Detail: {"success":true,"message":"student berhasil dibuat","data":{"id":3,"nim":"NIM86581","name":"Mahasiswa Admin","grade":90,"is_active":true,"owner_id":7,"created_at":"2026-09-18T22:51:53.720969+07:00"}}
+[PASS] M2.2 | Role: staff | POST /students | Expected: 201 | Actual: 201 | Staff berhasil menambah mahasiswa
+   Response Detail: {"success":true,"message":"student berhasil dibuat","data":{"id":4,"nim":"NIM69857","name":"Mahasiswa Staff","grade":85,"is_active":true,"owner_id":8,"created_at":"2026-09-18T22:51:53.731554+07:00"}}
+[PASS] M2.3 | Role: user | POST /students | Expected: 403 | Actual: 403 | User ditolak menambah mahasiswa (tidak punya student:create)
+   Response Detail: {"success":false,"message":"akses ditolak: Anda tidak memiliki hak akses (student:create)"}
+[PASS] NEG-1 | Role: staff | POST /students | Expected: 201 | Actual: 201 | Anti-Spoofing: owner_id dipaksa dari ID token (8), bukan dari body JSON (9999)
+   Response Detail: Owner direspons: 8 (Sesuai ID Token)
+[PASS] M3.1 | Role: user (owner) | GET /students/6 | Expected: 200 | Actual: 200 | Pemilik (user Andi) membaca data mahasiswa miliknya sendiri
+   Response Detail: {"success":true,"message":"student ditemukan","data":{"id":6,"nim":"NIM62345","name":"Mahasiswa Milik Andi","grade":95,"is_active":true,"owner_id":9,"created_at":"2026-09-18T22:51:53.988187+07:00"}}
+[PASS] M3.2 | Role: user (non-owner) | GET /students/6 | Expected: 403 | Actual: 403 | Bukan pemilik (user Bambang) membaca data milik Andi ditolak
+   Response Detail: {"success":false,"message":"akses ditolak: Anda bukan pemilik data ini dan tidak memiliki izin student:read:any"}
+[PASS] M3.3 | Role: staff (non-owner) | GET /students/6 | Expected: 200 | Actual: 200 | Staff membaca data mahasiswa milik Andi diizinkan (student:read:any)
+   Response Detail: {"success":true,"message":"student ditemukan","data":{"id":6,"nim":"NIM62345","name":"Mahasiswa Milik Andi","grade":95,"is_active":true,"owner_id":9,"created_at":"2026-09-18T22:51:53.988187+07:00"}}
+[PASS] M3.4 | Role: admin (non-owner) | GET /students/6 | Expected: 200 | Actual: 200 | Admin membaca data mahasiswa milik Andi diizinkan (student:read:any)
+   Response Detail: {"success":true,"message":"student ditemukan","data":{"id":6,"nim":"NIM62345","name":"Mahasiswa Milik Andi","grade":95,"is_active":true,"owner_id":9,"created_at":"2026-09-18T22:51:53.988187+07:00"}}
+[PASS] M4.1 | Role: user (owner) | PUT /students/6 | Expected: 200 | Actual: 200 | Pemilik (user Andi) mengedit datanya sendiri via PUT
+   Response Detail: {"success":true,"message":"student berhasil diganti seluruhnya","data":{"id":6,"nim":"NIM62345","name":"Mahasiswa Andi Updated","grade":98,"is_active":true,"owner_id":9,"created_at":"2026-09-18T22:51:53.988187+07:00"}}
+[PASS] NEG-2 | Role: user (non-owner) | PUT /students/6 | Expected: 403 | Actual: 403 | Cross-User Mutation: User Bambang mengedit data Andi ditolak (403 Forbidden)
+   Response Detail: {"success":false,"message":"akses ditolak: Anda bukan pemilik data ini dan tidak memiliki izin student:update:any"}
+[PASS] M4.2 | Role: staff (non-owner) | PUT /students/6 | Expected: 403 | Actual: 403 | Staff mengedit data orang lain ditolak (Staff tidak memiliki student:update:any)
+   Response Detail: {"success":false,"message":"akses ditolak: Anda bukan pemilik data ini dan tidak memiliki izin student:update:any"}
+[PASS] M4.3 | Role: admin (non-owner) | PUT /students/6 | Expected: 200 | Actual: 200 | Admin mengedit data mahasiswa mana pun diizinkan (student:update:any)
+   Response Detail: {"success":true,"message":"student berhasil diganti seluruhnya","data":{"id":6,"nim":"NIM62345","name":"Mahasiswa Andi Verified by Admin","grade":100,"is_active":true,"owner_id":9,"created_at":"2026-09-18T22:51:53.988187+07:00"}}
+[PASS] M5.1 | Role: user | DELETE /students/6 | Expected: 403 | Actual: 403 | User mencoba menghapus data mahasiswa ditolak (tidak punya student:delete)
+   Response Detail: {"success":false,"message":"akses ditolak: Anda tidak memiliki hak akses (student:delete)"}
+[PASS] M5.2 | Role: staff | DELETE /students/6 | Expected: 403 | Actual: 403 | Staff mencoba menghapus data mahasiswa ditolak (tidak punya student:delete)
+   Response Detail: {"success":false,"message":"akses ditolak: Anda tidak memiliki hak akses (student:delete)"}
+[PASS] M5.3 | Role: admin | DELETE /students/6 | Expected: 204 | Actual: 204 | Admin menghapus data mahasiswa diizinkan (memiliki student:delete)
+   Response Detail: No Content (Berhasil)
+[PASS] M6.1 | Role: admin | GET /users | Expected: 200 | Actual: 200 | Admin akses daftar seluruh pengguna (user:list)
+   Response Detail: {"success":true,"message":"daftar pengguna berhasil diambil","data":[{"id":1,"username":"sari_rahma","email":"sari@example.com","role":"user","created_at":"2026-09-12T15:23:23.408268+07:00"},{"id":2,"username":"hacker_user","email":"hacker@example.com","role":"user","created_at":"2026-09-12T15:23:23.873575+07:00"},{"id":3,"username":"sari_rahma_test","email":"sari_test@example.com","role":"user","created_at":"2026-09-12T15:23:54.038617+07:00"},{"id":4,"username":"hacker_role_test","email":"hacker_test@example.com","role":"user","created_at":"2026-09-12T15:23:54.933775+07:00"},{"id":5,"username":"test_demo","email":"test_demo@example.com","role":"user","created_at":"2026-09-13T22:39:28.193783+07:00"},{"id":6,"username":"demo_laporan","email":"demo@example.com","role":"user","created_at":"2026-09-13T22:40:36.36919+07:00"},{"id":7,"username":"admin_budi","email":"admin@univ.ac.id","role":"admin","created_at":"2026-09-18T22:49:51.74488+07:00"},{"id":8,"username":"staff_sari","email":"staff@univ.ac.id","role":"staff","created_at":"2026-09-18T22:49:51.74488+07:00"},{"id":9,"username":"user_andi","email":"andi@student.ac.id","role":"user","created_at":"2026-09-18T22:49:51.74488+07:00"},{"id":10,"username":"user_bambang","email":"bambang@student.ac.id","role":"user","created_at":"2026-09-18T22:49:51.74488+07:00"}]}
+[PASS] M6.2 | Role: staff | GET /users | Expected: 200 | Actual: 200 | Staff akses daftar seluruh pengguna (user:list)
+   Response Detail: {"success":true,"message":"daftar pengguna berhasil diambil","data":[{"id":1,"username":"sari_rahma","email":"sari@example.com","role":"user","created_at":"2026-09-12T15:23:23.408268+07:00"},{"id":2,"username":"hacker_user","email":"hacker@example.com","role":"user","created_at":"2026-09-12T15:23:23.873575+07:00"},{"id":3,"username":"sari_rahma_test","email":"sari_test@example.com","role":"user","created_at":"2026-09-12T15:23:54.038617+07:00"},{"id":4,"username":"hacker_role_test","email":"hacker_test@example.com","role":"user","created_at":"2026-09-12T15:23:54.933775+07:00"},{"id":5,"username":"test_demo","email":"test_demo@example.com","role":"user","created_at":"2026-09-13T22:39:28.193783+07:00"},{"id":6,"username":"demo_laporan","email":"demo@example.com","role":"user","created_at":"2026-09-13T22:40:36.36919+07:00"},{"id":7,"username":"admin_budi","email":"admin@univ.ac.id","role":"admin","created_at":"2026-09-18T22:49:51.74488+07:00"},{"id":8,"username":"staff_sari","email":"staff@univ.ac.id","role":"staff","created_at":"2026-09-18T22:49:51.74488+07:00"},{"id":9,"username":"user_andi","email":"andi@student.ac.id","role":"user","created_at":"2026-09-18T22:49:51.74488+07:00"},{"id":10,"username":"user_bambang","email":"bambang@student.ac.id","role":"user","created_at":"2026-09-18T22:49:51.74488+07:00"}]}
+[PASS] M6.3 | Role: user | GET /users | Expected: 403 | Actual: 403 | User ditolak melihat daftar seluruh pengguna
+   Response Detail: {"success":false,"message":"akses ditolak: Anda tidak memiliki hak akses (user:list)"}
+[PASS] M6.4 | Role: user (owner) | GET /users/9 | Expected: 200 | Actual: 200 | User membaca profil miliknya sendiri diizinkan
+   Response Detail: {"success":true,"message":"data user ditemukan","data":{"id":9,"username":"user_andi","email":"andi@student.ac.id","role":"user","created_at":"2026-09-18T22:49:51.74488+07:00"}}
+[PASS] M6.5 | Role: user (non-owner) | GET /users/7 | Expected: 403 | Actual: 403 | User membaca profil orang lain ditolak
+   Response Detail: {"success":false,"message":"akses ditolak: Anda bukan pemilik akun ini dan tidak memiliki izin user:read:any"}
+[PASS] M6.6 | Role: staff | PATCH /users/10/role | Expected: 403 | Actual: 403 | Staff ditolak mengubah role user (tidak punya role:assign)
+   Response Detail: {"success":false,"message":"akses ditolak: Anda tidak memiliki hak akses (role:assign)"}
+[PASS] M6.7 | Role: admin | PATCH /users/10/role | Expected: 200 | Actual: 200 | Admin berhasil mengubah role user menjadi staff (memiliki role:assign)
+   Response Detail: {"success":true,"message":"role user berhasil diubah","data":{"id":10,"username":"user_bambang","email":"bambang@student.ac.id","role":"staff","created_at":"2026-09-18T22:49:51.74488+07:00"}}
