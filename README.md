@@ -13,6 +13,7 @@ Repositori ini berisi implementasi materi dan tugas praktikum Pemrograman Backen
 | [`modul3/`](./modul3) | **Modul 3 — Database & Repository Pattern** | Migrasi penyimpanan ke PostgreSQL dengan driver `pgx/v5` (`pgxpool`), connection pool, migrasi DDL berparameter aman dari SQL Injection, abstraksi antarmuka `StudentRepository`, dan penerjemahan kode error PostgreSQL ke status HTTP. | Selesai |
 | [`modul4/`](./modul4) | **Modul 4 — Clean Architecture** | Restrukturisasi menyeluruh ke dalam 4 lapisan Clean Architecture: Entities (`app/model`), Repositories (`app/repository`), Use Cases (`app/service`), dan Delivery/Frameworks (`route`, `middleware`, `config`, `helper`). Dilengkapi *pure business rules*, unit testing, rotasi log file (`lumberjack`), dan *graceful shutdown*. | Selesai |
 | [`modul5/`](./modul5) | **Modul 5 — Authentication & Security** | Autentikasi JWT (HS256), hashing password bcrypt (cost 12), rotasi refresh token SHA-256 (sekali pakai), rate limiter brute force, pencegahan user enumeration & algorithm confusion, dan proteksi endpoint `/students`. | Selesai |
+| [`modul6/`](./modul6) | **Modul 6 — Authorization & RBAC** | Otorisasi berbasis peran (RBAC) dengan skema relasional (`roles`, `permissions`, `role_permissions`), evaluasi *fail-closed* di memori (`PermissionSet`), pemisahan middleware (`RequirePermission`) vs *ownership check* di layer service (`CanAccessStudent`), proteksi *anti-spoofing* `owner_id`, jejak audit `user_id` & `role`, dan 22 pengujian matriks RBAC. | Selesai |
 
 > **Catatan:** Folder `api-students/` tetap dipertahankan sebagai direktori cadangan/legacy dari pengerjaan awal.
 
@@ -64,4 +65,24 @@ go test -v ./app/service/...
 go run .
 # Jalankan pengujian keamanan otomatis (curl suite):
 .\test_security.ps1
+```
+
+### Menjalankan & Menguji Modul 6:
+```bash
+cd modul6
+# 1. Jalankan migrasi skema RBAC dan student permissions ke PostgreSQL:
+psql -U postgres -d praktikum_backend -f migrations/003_rbac.sql
+psql -U postgres -d praktikum_backend -f migrations/004_student_permissions.sql
+
+# 2. Jalankan seeder akun pengujian (admin_budi, staff_sari, user_andi, user_bambang):
+go run ./cmd/seed/main.go
+
+# 3. Jalankan seluruh unit test (helper authz, rules authz, student authz, dsb.):
+go test -v ./...
+
+# 4. Jalankan server API terproteksi RBAC:
+go run main.go
+
+# 5. Jalankan pengujian otomatis matriks hak akses RBAC (22 skenario):
+powershell -ExecutionPolicy Bypass -File .\test_rbac.ps1
 ```
