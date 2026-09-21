@@ -13,3 +13,7 @@ vendor/
 
 challenge_backend/
 latihan-endpoint/
+
+# Abaikan semua laporan markdown
+*LAPORAN*.md
+*laporan*.md
