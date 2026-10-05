@@ -14,6 +14,7 @@ Repositori ini berisi implementasi materi dan tugas praktikum Pemrograman Backen
 | [`modul4/`](./modul4) | **Modul 4 — Clean Architecture** | Restrukturisasi menyeluruh ke dalam 4 lapisan Clean Architecture: Entities (`app/model`), Repositories (`app/repository`), Use Cases (`app/service`), dan Delivery/Frameworks (`route`, `middleware`, `config`, `helper`). Dilengkapi *pure business rules*, unit testing, rotasi log file (`lumberjack`), dan *graceful shutdown*. | Selesai |
 | [`modul5/`](./modul5) | **Modul 5 — Authentication & Security** | Autentikasi JWT (HS256), hashing password bcrypt (cost 12), rotasi refresh token SHA-256 (sekali pakai), rate limiter brute force, pencegahan user enumeration & algorithm confusion, dan proteksi endpoint `/students`. | Selesai |
 | [`modul6/`](./modul6) | **Modul 6 — Authorization & RBAC** | Otorisasi berbasis peran (RBAC) dengan skema relasional (`roles`, `permissions`, `role_permissions`), evaluasi *fail-closed* di memori (`PermissionSet`), pemisahan middleware (`RequirePermission`) vs *ownership check* di layer service (`CanAccessStudent`), proteksi *anti-spoofing* `owner_id`, jejak audit `user_id` & `role`, dan 22 pengujian matriks RBAC. | Selesai |
+| [`modul7/`](./modul7) | **Modul 7 — Advanced API Design** | Validasi deklaratif berbasis struct tags (`go-playground/validator/v10`) & custom tag NIM/password, keyset/cursor pagination ($O(1)$ anti-page drift) dengan B-Tree composite index `(created_at DESC, id DESC)`, content negotiation (RFC 9110) format JSON & streaming CSV via header `Accept`, centralized error handling (`helper.AppError`), dan perbaikan 9 bug sengaja. | Selesai |
 
 > **Catatan:** Folder `api-students/` tetap dipertahankan sebagai direktori cadangan/legacy dari pengerjaan awal.
 
@@ -69,7 +70,7 @@ go run .
 
 ### Menjalankan & Menguji Modul 6:
 ```bash
-cd modul6
+cd modul6/api-students
 # 1. Jalankan migrasi skema RBAC dan student permissions ke PostgreSQL:
 psql -U postgres -d praktikum_backend -f migrations/003_rbac.sql
 psql -U postgres -d praktikum_backend -f migrations/004_student_permissions.sql
@@ -85,4 +86,28 @@ go run main.go
 
 # 5. Jalankan pengujian otomatis matriks hak akses RBAC (22 skenario):
 powershell -ExecutionPolicy Bypass -File .\test_rbac.ps1
+```
+
+### Menjalankan & Menguji Modul 7:
+```bash
+cd modul7/api-students
+# 1. Jalankan migrasi database (termasuk B-Tree composite index untuk cursor pagination):
+psql -U postgres -d praktikum_backend -f migrations/001_create_students.sql
+psql -U postgres -d praktikum_backend -f migrations/002_auth.sql
+psql -U postgres -d praktikum_backend -f migrations/003_rbac.sql
+psql -U postgres -d praktikum_backend -f migrations/004_student_permissions.sql
+psql -U postgres -d praktikum_backend -f migrations/005_cursor_index.sql
+psql -U postgres -d praktikum_backend -f migrations/006_student_cursor_index.sql
+
+# 2. Jalankan seeder akun pengujian:
+go run ./cmd/seed/main.go
+
+# 3. Jalankan server API Advanced Design:
+go run main.go
+
+# 4. Jalankan unit test:
+go test -v ./...
+
+# 5. Jalankan verifikasi otomatis (anti-drift, keyset pagination, content negotiation):
+node test_runner.js
 ```
