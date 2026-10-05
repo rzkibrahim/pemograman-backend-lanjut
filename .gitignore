@@ -17,3 +17,16 @@ latihan-endpoint/
 # Abaikan semua laporan markdown
 *LAPORAN*.md
 *laporan*.md
+
+*.txt
+
+UTS-PBE.md
+
+# Environment & Credential files
+.env
+*.env
+
+# Archive & log files
+*.zip
+logs/
+*.log
