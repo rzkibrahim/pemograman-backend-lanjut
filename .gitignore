@@ -30,3 +30,4 @@ UTS-PBE.md
 *.zip
 logs/
 *.log
+!*security_test_evidence.log
