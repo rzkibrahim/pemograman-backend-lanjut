@@ -15,8 +15,29 @@ Repositori ini berisi implementasi materi dan tugas praktikum Pemrograman Backen
 | [`modul5/`](./modul5) | **Modul 5 — Authentication & Security** | Autentikasi JWT (HS256), hashing password bcrypt (cost 12), rotasi refresh token SHA-256 (sekali pakai), rate limiter brute force, pencegahan user enumeration & algorithm confusion, dan proteksi endpoint `/students`. | Selesai |
 | [`modul6/`](./modul6) | **Modul 6 — Authorization & RBAC** | Otorisasi berbasis peran (RBAC) dengan skema relasional (`roles`, `permissions`, `role_permissions`), evaluasi *fail-closed* di memori (`PermissionSet`), pemisahan middleware (`RequirePermission`) vs *ownership check* di layer service (`CanAccessStudent`), proteksi *anti-spoofing* `owner_id`, jejak audit `user_id` & `role`, dan 22 pengujian matriks RBAC. | Selesai |
 | [`modul7/`](./modul7) | **Modul 7 — Advanced API Design** | Validasi deklaratif berbasis struct tags (`go-playground/validator/v10`) & custom tag NIM/password, keyset/cursor pagination ($O(1)$ anti-page drift) dengan B-Tree composite index `(created_at DESC, id DESC)`, content negotiation (RFC 9110) format JSON & streaming CSV via header `Accept`, centralized error handling (`helper.AppError`), dan perbaikan 9 bug sengaja. | Selesai |
+| [`latihan-fiber/UTS/`](./latihan-fiber/UTS) | **Proyek UTS — SIAKAD Mini API** | Sistem Informasi Akademik Mini berbasis Fiber v2 & PostgreSQL: 10 endpoint RESTful API (Auth JWT, RBAC Admin & Mahasiswa, manajemen Mahasiswa, katalog Mata Kuliah, KRS Enrollment dengan validasi batas SKS dinamis & row-locking kuota atomik `FOR UPDATE`, auto-seeder, rate limiter, serta suite 10 skenario pengujian otomatis). | Selesai |
 
-> **Catatan:** Folder `api-students/` tetap dipertahankan sebagai direktori cadangan/legacy dari pengerjaan awal.
+> **Catatan Struktur Folder:** 
+> - Proyek Ujian Tengah Semester (UTS) terletak di dalam direktori [`latihan-fiber/UTS/`](./latihan-fiber/UTS).
+> - Folder `api-students/` tetap dipertahankan sebagai direktori cadangan/legacy dari pengerjaan awal.
+
+---
+
+## Struktur Direktori Repositori
+
+```text
+PBEL/
+├── modul1/                 # Pertemuan 1: Dasar Go & Fiber
+├── modul2/                 # Pertemuan 2: REST API & HTTP Deep Dive (Slice in-memory)
+├── modul3/                 # Pertemuan 3: Database & Repository Pattern (PostgreSQL pgx)
+├── modul4/                 # Pertemuan 4: Clean Architecture 4-Layer & Graceful Shutdown
+├── modul5/                 # Pertemuan 5: Authentication & Security (JWT, bcrypt, Brute Force Limiter)
+├── modul6/                 # Pertemuan 6: Authorization & RBAC (Roles & Permissions Database)
+├── modul7/                 # Pertemuan 7: Advanced API Design (Cursor Pagination & Content Negotiation)
+├── latihan-fiber/
+│   └── UTS/                # Proyek UTS: SIAKAD Mini RESTful API Engine
+└── api-students/           # Direktori legacy / cadangan pengembangan awal
+```
 
 ---
 
@@ -111,3 +132,21 @@ go test -v ./...
 # 5. Jalankan verifikasi otomatis (anti-drift, keyset pagination, content negotiation):
 node test_runner.js
 ```
+
+### Menjalankan & Menguji Proyek UTS (SIAKAD Mini):
+```bash
+cd latihan-fiber/UTS
+
+# 1. Konfigurasi kredensial database di .env (salin dari .env.example jika belum ada):
+# Sesuaikan DB_USER, DB_PASSWORD, dan DB_NAME=siakad_mini
+
+# 2. Jalankan seeder database (otomatis mengeksekusi migrasi skema, akun admin/mahasiswa, & katalog mata kuliah):
+go run cmd/seed/main.go
+
+# 3. Jalankan server API SIAKAD Mini (aktif di port 3000):
+go run main.go
+
+# 4. Jalankan pengujian otomatis 10 endpoint (PowerShell):
+powershell -ExecutionPolicy Bypass -File .\test_all_endpoints.ps1
+```
+
