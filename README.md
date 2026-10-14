@@ -41,6 +41,66 @@ PBEL/
 
 ---
 
+## Prasyarat Sistem & Tech Stack
+
+Sebelum menjalankan modul-modul di repositori ini, pastikan lingkungan pengujian memenuhi spesifikasi berikut:
+
+* **Go (Golang)**: Versi `1.22+` (disarankan `1.24+` / `1.26+`)
+* **PostgreSQL Database Server**: Versi `14+` aktif pada port default `5432`
+* **Node.js**: Versi `18+` (dibutuhkan untuk menjalankan suite verifikasi otomatis `test_runner.js` pada Modul 7)
+* **PowerShell / Bash**: Untuk menjalankan skrip otomasi pengujian keamanan dan endpoint (`.ps1`)
+* **Pustaka & Driver Utama**:
+  * Web Framework: **Fiber v2** (`github.com/gofiber/fiber/v2`)
+  * Database Driver: **pgx v5** (`github.com/jackc/pgx/v5`) dengan *connection pool* (`pgxpool`)
+  * Validasi Data: **go-playground/validator/v10** & custom validation tags
+  * Autentikasi & Kriptografi: **golang-jwt/jwt/v5** & **golang.org/x/crypto/bcrypt** (cost 12)
+  * Logging & Rotasi File: **gopkg.in/natefinch/lumberjack.v2**
+
+---
+
+## Matriks Konfigurasi Database & Port
+
+Tabel berikut menyajikan ringkasan cepat konfigurasi port, basis data, dan metode verifikasi untuk setiap modul:
+
+| Direktori | Modul / Topik | Port Default | Nama Database PostgreSQL | Skrip Verifikasi & Pengujian |
+| :--- | :--- | :---: | :--- | :--- |
+| [`modul1/`](./modul1) | Dasar Go & Fiber | `3000` | *Tanpa Database (In-Memory)* | Eksekusi `main.go`, `no2.go`, `no3.go`, `no4.go` |
+| [`modul2/`](./modul2) | REST API & HTTP Deep Dive | `3000` | *Tanpa Database (Slice In-Memory)* | Unit testing: `go test -v ./...` (17 skenario) |
+| [`modul3/`](./modul3) | Database & Repository Pattern | `3000` | `praktikum_backend` | Manual via cURL / Postman |
+| [`modul4/`](./modul4) | Clean Architecture 4-Layer | `3000` | `praktikum_backend` | Unit testing: `go test -v ./...` |
+| [`modul5/`](./modul5) | Authentication & Security | `3000` | `praktikum_backend` | Unit testing service & `.\test_security.ps1` |
+| [`modul6/`](./modul6) | Authorization & RBAC | `3000` | `praktikum_backend` | Matriks RBAC: `powershell .\test_rbac.ps1` (22 skenario) |
+| [`modul7/`](./modul7) | Advanced API Design | `3000` | `praktikum_backend` | Verifikasi cursor & format: `node test_runner.js` |
+| [`latihan-fiber/UTS/`](./latihan-fiber/UTS) | Proyek UTS (SIAKAD Mini) | `3000` | `siakad_mini` | Suite otomatis: `powershell .\test_all_endpoints.ps1` (10 endpoint) |
+
+---
+
+## Kredensial Akun Seeder & Pengujian
+
+Untuk mempermudah pengujian API (login, autorisasi, dan pengambilan KRS) via Postman atau cURL, gunakan akun-akun bawaan seeder berikut:
+
+### 1. Akun Modul 6 & Modul 7 (`DB: praktikum_backend`)
+Dibuat otomatis dengan menjalankan `go run ./cmd/seed/main.go` dari folder modul masing-masing:
+
+| Username | Email | Password | Role | Hak Akses Utama |
+| :--- | :--- | :--- | :---: | :--- |
+| `admin_budi` | `admin@univ.ac.id` | `Password123!` | `admin` | Akses penuh CRUD, manajemen role & permissions |
+| `staff_sari` | `staff@univ.ac.id` | `Password123!` | `staff` | Read all students, create student, update student |
+| `user_andi` | `andi@student.ac.id` | `Password123!` | `user` | Read-only mahasiswa data sendiri (*ownership check*) |
+| `user_bambang` | `bambang@student.ac.id` | `Password123!` | `user` | Read-only mahasiswa data sendiri (*ownership check*) |
+
+### 2. Akun Proyek UTS — SIAKAD Mini (`DB: siakad_mini`)
+Dibuat otomatis dengan menjalankan `go run cmd/seed/main.go` dari dalam folder [`latihan-fiber/UTS`](./latihan-fiber/UTS):
+
+| Role | Akun / Email | Password Default | Keterangan & Batasan |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin@siakad.ac.id` | `admin12345` | Hak akses penuh: kelola mahasiswa, mata kuliah, dan KRS seluruh mahasiswa |
+| **Mahasiswa 1** | `rina.putri@mhs.siakad.ac.id` | `187221000001` *(NIM)* | Profil mahasiswa, ambil/batalkan KRS, validasi batas SKS (IPK 3.85 = max 24 SKS) |
+| **Mahasiswa 2** | `dimas.setiawan@mhs.siakad.ac.id` | `187221000002` *(NIM)* | Akun uji coba perebutan kuota mata kuliah & batas SKS (IPK 2.70 = max 20 SKS) |
+| **Mahasiswa 3–20** | `[nama]@mhs.siakad.ac.id` | *(NIM Masing-masing)* | 18 akun mahasiswa tambahan untuk verifikasi pagination dan konkurensi kuota |
+
+---
+
 ## Cara Menjalankan Setiap Modul
 
 Masing-masing modul memiliki file `go.mod` dan dependensi sendiri:
