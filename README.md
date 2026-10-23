@@ -15,7 +15,6 @@ Repositori ini berisi implementasi materi dan tugas praktikum Pemrograman Backen
 | [`modul5/`](./modul5) | **Modul 5 — Authentication & Security** | Autentikasi JWT (HS256), hashing password bcrypt (cost 12), rotasi refresh token SHA-256 (sekali pakai), rate limiter brute force, pencegahan user enumeration & algorithm confusion, dan proteksi endpoint `/students`. | Selesai |
 | [`modul6/`](./modul6) | **Modul 6 — Authorization & RBAC** | Otorisasi berbasis peran (RBAC) dengan skema relasional (`roles`, `permissions`, `role_permissions`), evaluasi *fail-closed* di memori (`PermissionSet`), pemisahan middleware (`RequirePermission`) vs *ownership check* di layer service (`CanAccessStudent`), proteksi *anti-spoofing* `owner_id`, jejak audit `user_id` & `role`, dan 22 pengujian matriks RBAC. | Selesai |
 | [`modul7/`](./modul7) | **Modul 7 — Advanced API Design** | Validasi deklaratif berbasis struct tags (`go-playground/validator/v10`) & custom tag NIM/password, keyset/cursor pagination ($O(1)$ anti-page drift) dengan B-Tree composite index `(created_at DESC, id DESC)`, content negotiation (RFC 9110) format JSON & streaming CSV via header `Accept`, centralized error handling (`helper.AppError`), dan perbaikan 9 bug sengaja. | Selesai |
-| [`modul10/`](./modul10) | **Modul 10 — API dengan MongoDB** | PostgreSQL + MongoDB polyglot persistence, ulasan kelas dengan update atomik dan aggregation `$facet`, portofolio mahasiswa embedded, validasi bertipe, serta health check dua database. | Selesai |
 | [`latihan-fiber/UTS/`](./latihan-fiber/UTS) | **Proyek UTS — SIAKAD Mini API** | Sistem Informasi Akademik Mini berbasis Fiber v2 & PostgreSQL: 10 endpoint RESTful API (Auth JWT, RBAC Admin & Mahasiswa, manajemen Mahasiswa, katalog Mata Kuliah, KRS Enrollment dengan validasi batas SKS dinamis & row-locking kuota atomik `FOR UPDATE`, auto-seeder, rate limiter, serta suite 10 skenario pengujian otomatis). | Selesai |
 
 > **Catatan Struktur Folder:** 
@@ -35,7 +34,6 @@ PBEL/
 ├── modul5/                 # Pertemuan 5: Authentication & Security (JWT, bcrypt, Brute Force Limiter)
 ├── modul6/                 # Pertemuan 6: Authorization & RBAC (Roles & Permissions Database)
 ├── modul7/                 # Pertemuan 7: Advanced API Design (Cursor Pagination & Content Negotiation)
-├── modul10/                # Pertemuan 10: MongoDB & Polyglot Persistence
 ├── latihan-fiber/
 │   └── UTS/                # Proyek UTS: SIAKAD Mini RESTful API Engine
 └── api-students/           # Direktori legacy / cadangan pengembangan awal
@@ -49,13 +47,11 @@ Sebelum menjalankan modul-modul di repositori ini, pastikan lingkungan pengujian
 
 * **Go (Golang)**: Versi `1.22+` (disarankan `1.24+` / `1.26+`)
 * **PostgreSQL Database Server**: Versi `14+` aktif pada port default `5432`
-* **MongoDB**: Versi Community `9.0+` atau cluster Atlas (khusus Modul 10)
 * **Node.js**: Versi `18+` (dibutuhkan untuk menjalankan suite verifikasi otomatis `test_runner.js` pada Modul 7)
 * **PowerShell / Bash**: Untuk menjalankan skrip otomasi pengujian keamanan dan endpoint (`.ps1`)
 * **Pustaka & Driver Utama**:
   * Web Framework: **Fiber v2** (`github.com/gofiber/fiber/v2`)
   * Database Driver: **pgx v5** (`github.com/jackc/pgx/v5`) dengan *connection pool* (`pgxpool`)
-  * MongoDB Driver Modul 10: **MongoDB Go Driver v2** (`go.mongodb.org/mongo-driver/v2`)
   * Validasi Data: **go-playground/validator/v10** & custom validation tags
   * Autentikasi & Kriptografi: **golang-jwt/jwt/v5** & **golang.org/x/crypto/bcrypt** (cost 12)
   * Logging & Rotasi File: **gopkg.in/natefinch/lumberjack.v2**
@@ -75,7 +71,6 @@ Tabel berikut menyajikan ringkasan cepat konfigurasi port, basis data, dan metod
 | [`modul5/`](./modul5) | Authentication & Security | `3000` | `praktikum_backend` | Unit testing service & `.\test_security.ps1` |
 | [`modul6/`](./modul6) | Authorization & RBAC | `3000` | `praktikum_backend` | Matriks RBAC: `powershell .\test_rbac.ps1` (22 skenario) |
 | [`modul7/`](./modul7) | Advanced API Design | `3000` | `praktikum_backend` | Verifikasi cursor & format: `node test_runner.js` |
-| [`modul10/`](./modul10) | API dengan MongoDB | `3000` | `praktikum_backend` + MongoDB `praktikum_backend` | Unit test: `go test ./...`; [panduan Modul 10](./modul10/README.md) |
 | [`latihan-fiber/UTS/`](./latihan-fiber/UTS) | Proyek UTS (SIAKAD Mini) | `3000` | `siakad_mini` | Suite otomatis: `powershell .\test_all_endpoints.ps1` (10 endpoint) |
 
 ---
@@ -196,20 +191,6 @@ go test -v ./...
 
 # 5. Jalankan verifikasi otomatis (anti-drift, keyset pagination, content negotiation):
 node test_runner.js
-```
-
-### Menjalankan Modul 10:
-Panduan instalasi MongoDB, konfigurasi, endpoint, dan verifikasi tersedia di [`modul10/README.md`](./modul10/README.md).
-
-```powershell
-cd modul10/api-students
-Copy-Item .env.example .env
-# Isi DB_PASSWORD dan JWT_SECRET; pastikan PostgreSQL dan MongoDB aktif.
-# Jalankan migration migrations/001_*.sql sampai migrations/010_*.sql.
-go mod tidy
-go run ./cmd/seed/main.go
-go test ./...
-go run main.go
 ```
 
 ### Menjalankan & Menguji Proyek UTS (SIAKAD Mini):
