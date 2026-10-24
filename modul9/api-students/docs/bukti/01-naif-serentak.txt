@@ -1,0 +1,12 @@
+﻿# BUKTI UJI BEBAN MODUL 9 (keluaran: go run ./tools/loadtest -scenario all)
+# Skenario: UJI PEMBANDING: NAIVE ENROLLMENT (CHECK-THEN-ACT TANPA LOCK)
+
+[Naive Check-Then-Act (Sengaja Salah)] Menjalankan uji beban 60 request serentak ke course ID 1 (kuota 5)...
+  Percobaan 1/1 (waktu: 28.1269ms):
+    -> HTTP 201 Created      : 14
+    -> HTTP 409 COURSE_FULL  : 46
+    -> HTTP Status Lain      : 0
+    -> DB courses.enrolled   : 5
+    -> DB COUNT(enrollments) : 14
+    [ANALISIS RACE CONDITION] Naive mode menghasilkan 14 pendaftar tembus dari kuota 5!
+
