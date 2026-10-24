@@ -20,6 +20,9 @@ latihan-endpoint/
 
 *.txt
 
+# Pengecualian: file-bukti keluaran uji beban tetap di-commit
+!modul9/api-students/docs/bukti/*.txt
+
 UTS-PBE.md
 
 # Environment & Credential files
