@@ -1,0 +1,11 @@
+﻿# BUKTI UJI BEBAN MODUL 9 (keluaran: go run ./tools/loadtest -scenario all)
+# Skenario: UJI CREDIT LIMIT CONCURRENCY (BATAS 24 SKS DENGAN PESSIMISTIC LOCK)
+
+[Pessimistic Locking] Menguji 10 request serentak dari 1 mahasiswa (IF101..IF105, total 16 SKS + duplikat)...
+  Percobaan 1/3: Total SKS terdaftar = 16 SKS (Batas: 24 SKS)
+    [STATUS: LULUS] Total SKS tidak pernah melebihi 24.
+  Percobaan 2/3: Total SKS terdaftar = 16 SKS (Batas: 24 SKS)
+    [STATUS: LULUS] Total SKS tidak pernah melebihi 24.
+  Percobaan 3/3: Total SKS terdaftar = 16 SKS (Batas: 24 SKS)
+    [STATUS: LULUS] Total SKS tidak pernah melebihi 24.
+

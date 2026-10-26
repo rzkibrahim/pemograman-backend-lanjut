@@ -1,0 +1,8 @@
+﻿# BUKTI UJI BEBAN MODUL 9 (keluaran: go run ./tools/loadtest -scenario all)
+# Skenario: UJI KETAHANAN KONEKSI & IDLE IN TRANSACTION (175 KEGAGALAN)
+
+[Ketahanan Koneksi & Idle Leak] Mengirim 175 request gagal berturut-turut...
+  -> Health Status Code               : HTTP 200 (harapan: 200)
+  -> 'idle in transaction' di Postgres : 0 (harapan: 0)
+  [STATUS: LULUS] Defer Rollback berfungsi sempurna, 0 transaksi bocor.
+
