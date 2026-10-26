@@ -1,0 +1,26 @@
+﻿# BUKTI UJI BEBAN MODUL 9 (keluaran: go run ./tools/loadtest -scenario all)
+# Skenario: UJI CROWD ENROLLMENT (KUOTA 5 vs 60 REQUEST SERENTAK - 3x)
+
+[Atomic Conditional UPDATE (Aman)] Menjalankan uji beban 60 request serentak ke course ID 1 (kuota 5)...
+  Percobaan 1/3 (waktu: 290.9681ms):
+    -> HTTP 201 Created      : 5
+    -> HTTP 409 COURSE_FULL  : 55
+    -> HTTP Status Lain      : 0
+    -> DB courses.enrolled   : 5
+    -> DB COUNT(enrollments) : 5
+    [STATUS: LULUS] Tepat 5 berhasil, 55 COURSE_FULL, DB konsisten.
+  Percobaan 2/3 (waktu: 36.0828ms):
+    -> HTTP 201 Created      : 5
+    -> HTTP 409 COURSE_FULL  : 55
+    -> HTTP Status Lain      : 0
+    -> DB courses.enrolled   : 5
+    -> DB COUNT(enrollments) : 5
+    [STATUS: LULUS] Tepat 5 berhasil, 55 COURSE_FULL, DB konsisten.
+  Percobaan 3/3 (waktu: 30.8267ms):
+    -> HTTP 201 Created      : 5
+    -> HTTP 409 COURSE_FULL  : 55
+    -> HTTP Status Lain      : 0
+    -> DB courses.enrolled   : 5
+    -> DB COUNT(enrollments) : 5
+    [STATUS: LULUS] Tepat 5 berhasil, 55 COURSE_FULL, DB konsisten.
+

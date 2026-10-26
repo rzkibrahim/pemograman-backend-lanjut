@@ -1,0 +1,13 @@
+﻿# BUKTI UJI BEBAN MODUL 9 (keluaran: go run ./tools/loadtest -scenario all)
+# Skenario: UJI FUNGSIONAL LENGKAP (C.4: 8 KASUS VALIDASI & KEAMANAN)
+
+[Uji Fungsional C.4]
+  1. Daftar kelas sah                 : HTTP 201 (harapan: 201)
+  2. Daftar ganda                     : HTTP 409, body: {"success":false,"code":"ALREADY_ENROLLED","message":"mahasiswa sudah terdaftar di kelas ini","request_id":"715fe4a2-3415-4f97-b13e-fb8d34330e56"} (harapan: 409 ALREADY_ENROLLED)
+  3. Drop kelas yang belum diambil    : HTTP 409, body: {"success":false,"code":"NOT_ENROLLED","message":"mahasiswa tidak terdaftar di kelas ini","request_id":"725fe4a2-3415-4f97-b13e-fb8d34330e56"} (harapan: 409 NOT_ENROLLED)
+  4. Swap kelas tujuan = kelas asal   : HTTP 422 (harapan: 422)
+  5. Ubah kuota admin (version benar) : HTTP 200 (harapan: 200)
+  6. Ubah kuota (version conflict)    : HTTP 409, body: {"success":false,"code":"VERSION_CONFLICT","message":"data sudah diubah oleh pengguna lain (version conflict)","request_id":"755fe4a2-3415-4f97-b13e-fb8d34330e56"} (harapan: 409 VERSION_CONFLICT)
+  7. Kuota baru < jumlah terdaftar    : HTTP 409, body: {"success":false,"code":"QUOTA_BELOW_ENROLLED","message":"kuota tidak boleh lebih kecil dari jumlah peserta terdaftar","request_id":"775fe4a2-3415-4f97-b13e-fb8d34330e56"} (harapan: 409 QUOTA_BELOW_ENROLLED)
+  8. Mahasiswa ubah kuota             : HTTP 403 (harapan: 403 Forbidden)
+

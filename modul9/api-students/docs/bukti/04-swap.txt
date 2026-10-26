@@ -1,0 +1,17 @@
+﻿# BUKTI UJI BEBAN MODUL 9 (keluaran: go run ./tools/loadtest -scenario all)
+# Skenario: UJI DEADLOCK PREVENTION PADA PINDAH KELAS (40 CONCURRENT SWAP)
+
+[Deadlock Prevention] Menguji 40 request pindah kelas serentak (20 A->B dan 20 B->A)...
+  Percobaan 1/3 (durasi: 192.2711ms):
+    -> Swap Berhasil : 40/40
+    -> Swap Gagal    : 0/40
+    [STATUS: LULUS] 40 sukses, 0 deadlock, durasi < 1 detik.
+  Percobaan 2/3 (durasi: 173.7493ms):
+    -> Swap Berhasil : 40/40
+    -> Swap Gagal    : 0/40
+    [STATUS: LULUS] 40 sukses, 0 deadlock, durasi < 1 detik.
+  Percobaan 3/3 (durasi: 96.4019ms):
+    -> Swap Berhasil : 40/40
+    -> Swap Gagal    : 0/40
+    [STATUS: LULUS] 40 sukses, 0 deadlock, durasi < 1 detik.
+
