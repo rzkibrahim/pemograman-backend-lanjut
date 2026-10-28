@@ -1,0 +1,32 @@
+﻿# BUKTI UJI BEBAN MODUL 9 (keluaran: go run ./tools/loadtest -scenario all)
+# Skenario: UJI TUGAS D.2 & D.3: PENETAPAN PEMBIMBING TA (30 SERENTAK - 3x)
+
+[Tugas D.2 & D.3] Menguji 30 mahasiswa menetapkan Dr. Ahmad Fauzi (kuota 3) serentak...
+  Percobaan 1/3 (waktu: 31.5754ms):
+    -> HTTP 201 Created           : 3
+    -> HTTP 409 SUPERVISOR_FULL   : 27
+    -> HTTP Status Lain           : 0
+    -> DB supervised_count        : 3
+    -> DB COUNT(supervisions)     : 3
+    [STATUS: LULUS] Tepat 3 sukses, 27 SUPERVISOR_FULL, DB konsisten.
+  Percobaan 2/3 (waktu: 22.5988ms):
+    -> HTTP 201 Created           : 3
+    -> HTTP 409 SUPERVISOR_FULL   : 27
+    -> HTTP Status Lain           : 0
+    -> DB supervised_count        : 3
+    -> DB COUNT(supervisions)     : 3
+    [STATUS: LULUS] Tepat 3 sukses, 27 SUPERVISOR_FULL, DB konsisten.
+  Percobaan 3/3 (waktu: 24.8065ms):
+    -> HTTP 201 Created           : 3
+    -> HTTP 409 SUPERVISOR_FULL   : 27
+    -> HTTP Status Lain           : 0
+    -> DB supervised_count        : 3
+    -> DB COUNT(supervisions)     : 3
+    [STATUS: LULUS] Tepat 3 sukses, 27 SUPERVISOR_FULL, DB konsisten.
+
+  Menguji Switch Supervisor Beban & Atomik (D.2)...
+    -> Switch Supervisor 1 -> 2     : HTTP 200 (harapan: 200)
+    -> Kuota Sup 1: 2, Kuota Sup 2: 1 (harapan: Sup1 berkurang 1, Sup2 bertambah 1)
+    -> PATCH /supervisors/1 (optimistic) : HTTP 200 (harapan: 200)
+
+
