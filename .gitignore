@@ -34,3 +34,6 @@ UTS-PBE.md
 logs/
 *.log
 !*security_test_evidence.log
+
+# Postman collection & environment exports
+postman/
