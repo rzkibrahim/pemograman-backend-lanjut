@@ -16,6 +16,10 @@ Repositori ini berisi implementasi materi dan tugas praktikum Pemrograman Backen
 | [`modul6/`](./modul6) | **Modul 6 — Authorization & RBAC** | Otorisasi berbasis peran (RBAC) dengan skema relasional (`roles`, `permissions`, `role_permissions`), evaluasi *fail-closed* di memori (`PermissionSet`), pemisahan middleware (`RequirePermission`) vs *ownership check* di layer service (`CanAccessStudent`), proteksi *anti-spoofing* `owner_id`, jejak audit `user_id` & `role`, dan 22 pengujian matriks RBAC. | Selesai |
 | [`modul7/`](./modul7) | **Modul 7 — Advanced API Design** | Validasi deklaratif berbasis struct tags (`go-playground/validator/v10`) & custom tag NIM/password, keyset/cursor pagination ($O(1)$ anti-page drift) dengan B-Tree composite index `(created_at DESC, id DESC)`, content negotiation (RFC 9110) format JSON & streaming CSV via header `Accept`, centralized error handling (`helper.AppError`), dan perbaikan 9 bug sengaja. | Selesai |
 | [`latihan-fiber/UTS/`](./latihan-fiber/UTS) | **Proyek UTS — SIAKAD Mini API** | Sistem Informasi Akademik Mini berbasis Fiber v2 & PostgreSQL: 10 endpoint RESTful API (Auth JWT, RBAC Admin & Mahasiswa, manajemen Mahasiswa, katalog Mata Kuliah, KRS Enrollment dengan validasi batas SKS dinamis & row-locking kuota atomik `FOR UPDATE`, auto-seeder, rate limiter, serta suite 10 skenario pengujian otomatis). | Selesai |
+| [modul9/api-students/](./modul9/api-students) | **Modul 9 — Transactions & Concurrency** | Transaksi ACID, row-locking (FOR UPDATE), pencegahan race condition dan lost update, conditional update atomik, TxManager, pendaftaran KRS serentak, serta domain pembimbing Tugas Akhir (Supervisors). | Selesai |
+| [modul10/api-students/](./modul10/api-students) | **Modul 10 — Polyglot Persistence (MongoDB)** | Arsitektur multi-database (PostgreSQL + MongoDB), review mata kuliah, reply review, dan manajemen dokumen portfolio mahasiswa terstruktur. | Selesai |
+| [modul11/](./modul11) | **Modul 11 — Asynchronous & Outbox Pattern** | Pemrosesan background asinkron menggunakan Redis dan Asynq, transactional outbox pattern, relay worker terpisah, pengiriman email notifikasi, serta toleransi failover antrean. | Selesai |
+| [modul12/](./modul12) | **Modul 12 — Testing, Swagger & Deployment** | Testing komprehensif (unit test, fake repository double, integration test database terisolasi), dokumentasi otomatis Swagger / OpenAPI 2.0 (20 endpoint), dan orkestrasi container Docker Compose. | Selesai |
 
 > **Catatan Struktur Folder:** 
 > - Proyek Ujian Tengah Semester (UTS) terletak di dalam direktori [`latihan-fiber/UTS/`](./latihan-fiber/UTS).
@@ -34,6 +38,10 @@ PBEL/
 ├── modul5/                 # Pertemuan 5: Authentication & Security (JWT, bcrypt, Brute Force Limiter)
 ├── modul6/                 # Pertemuan 6: Authorization & RBAC (Roles & Permissions Database)
 ├── modul7/                 # Pertemuan 7: Advanced API Design (Cursor Pagination & Content Negotiation)
+├── modul9/                 # Pertemuan 9: Transactions & Concurrency (KRS & Pembimbing)
+├── modul10/                # Pertemuan 10: Polyglot Persistence (MongoDB Reviews & Portfolios)
+├── modul11/                # Pertemuan 11: Asynchronous Processing & Outbox Pattern (Redis & Asynq)
+├── modul12/                # Pertemuan 12: Testing, Quality, API Documentation & Docker
 ├── latihan-fiber/
 │   └── UTS/                # Proyek UTS: SIAKAD Mini RESTful API Engine
 └── api-students/           # Direktori legacy / cadangan pengembangan awal
@@ -72,6 +80,10 @@ Tabel berikut menyajikan ringkasan cepat konfigurasi port, basis data, dan metod
 | [`modul6/`](./modul6) | Authorization & RBAC | `3000` | `praktikum_backend` | Matriks RBAC: `powershell .\test_rbac.ps1` (22 skenario) |
 | [`modul7/`](./modul7) | Advanced API Design | `3000` | `praktikum_backend` | Verifikasi cursor & format: `node test_runner.js` |
 | [`latihan-fiber/UTS/`](./latihan-fiber/UTS) | Proyek UTS (SIAKAD Mini) | `3000` | `siakad_mini` | Suite otomatis: `powershell .\test_all_endpoints.ps1` (10 endpoint) |
+| [modul9/api-students/](./modul9/api-students) | Transactions & Concurrency | 3000 | praktikum_backend | Uji beban goroutine: go run ./tools/loadtest/main.go |
+| [modul10/api-students/](./modul10/api-students) | Polyglot Persistence (MongoDB) | 3000 | praktikum_backend & praktikum_backend_mongo | Verifikasi review/portfolio & NoSQL security |
+| [modul11/](./modul11) | Asynchronous & Outbox Pattern | 3000 | praktikum_backend & Redis (6379) | Uji worker asinkron, outbox relay & failover |
+| [modul12/](./modul12) | Testing, Swagger & Deployment | 3000 | praktikum_backend_test & praktikum_backend | Suite unit/integration test (go test ./...) & Swagger UI |
 
 ---
 
@@ -210,3 +222,57 @@ go run main.go
 powershell -ExecutionPolicy Bypass -File .\test_all_endpoints.ps1
 ```
 
+
+
+### Menjalankan Modul 9 (Transactions & Concurrency):
+```bash
+cd modul9/api-students
+# 1. Jalankan migrasi skema tabel courses, supervisions, dan akun load test ke PostgreSQL:
+psql -U postgres -d praktikum_backend -f migrations/007_courses.sql
+psql -U postgres -d praktikum_backend -f migrations/008_seed_loadtest.sql
+psql -U postgres -d praktikum_backend -f migrations/009_supervisors.sql
+
+# 2. Jalankan server API:
+go run main.go
+
+# 3. Jalankan pengujian beban konkurensi (crowd, credits, swap, supervisors):
+go run ./tools/loadtest/main.go
+```
+
+### Menjalankan Modul 10 (Polyglot Persistence — MongoDB):
+```bash
+cd modul10/api-students
+# 1. Pastikan PostgreSQL dan MongoDB aktif
+# 2. Jalankan migrasi permission review:
+psql -U postgres -d praktikum_backend -f migrations/010_review_permissions.sql
+
+# 3. Jalankan server API Polyglot:
+go run main.go
+```
+
+### Menjalankan Modul 11 (Asynchronous Processing & Outbox Pattern):
+```bash
+cd modul11
+# 1. Pastikan PostgreSQL, Redis server, dan mail trap / SMTP aktif
+# 2. Jalankan migrasi transactional outbox & idempotency:
+psql -U postgres -d praktikum_backend -f migrations/008_outbox.sql
+psql -U postgres -d praktikum_backend -f migrations/009_notifications_idempotency.sql
+
+# 3. Jalankan HTTP server API Fiber:
+go run main.go
+
+# 4. Jalankan asynchronous worker (Asynq consumer & email processor):
+go run worker.go
+```
+
+### Menjalankan Modul 12 (Testing, Quality, Swagger & Docker):
+```bash
+cd modul12
+# 1. Menjalankan seluruh test suite (unit test & integration test database terisolasi):
+go test -v ./...
+go test -tags=integration -v ./tests/integration/...
+
+# 2. Menjalankan server lokal dengan Swagger UI:
+go run main.go
+# Buka Swagger UI di browser: http://localhost:3000/swagger/index.html
+```
